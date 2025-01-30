@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Mango.MessageBus;
 using Mango.Services.ShoppingCartAPI.Data;
 using Mango.Services.ShoppingCartAPI.Models;
 using Mango.Services.ShoppingCartAPI.Models.Dto;
@@ -18,10 +19,18 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
         private ResponseDto _response;
         private IMapper _mapper;
         private readonly AppDbContext _db;
+        private readonly IMessageBus _messageBus;
         private IProductService _productService;
         private ICouponService _couponService;
         private IConfiguration _configuration;
-        public CartApiController(AppDbContext db, IMapper mapper, IProductService productService, ICouponService couponService, IConfiguration configuration)
+        public CartApiController(
+                    AppDbContext db,
+                    IMapper mapper,
+                    IProductService productService,
+                    ICouponService couponService,
+                    IConfiguration configuration,
+                    IMessageBus messageBus
+            )
         {
             _db = db;
             this._response = new ResponseDto();
@@ -29,6 +38,7 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
             _productService = productService;
             _couponService = couponService;
             _configuration = configuration;
+            _messageBus= messageBus;
         }
         [HttpGet("GetCart/{userId}")]
         public async Task<ResponseDto> GetCart(string userId)
@@ -85,6 +95,22 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
                 cartFromDb.CouponCode = cartDto.CartHeader.Couponcode;
                 _db.CartHeader.Update(cartFromDb);
                 await _db.SaveChangesAsync();
+                _response.Result = true;
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.ToString();
+            }
+            return _response;
+        }
+        [HttpPost("EmailCartRequest")]
+        public async Task<object> EmailCartRequest([FromBody] CartDto cartDto)
+        {
+            try
+            {
+                await _messageBus.PublishMessage(cartDto, _configuration.GetValue<string>("TopicAndQueueNames:EmailShoppingCartQueue"));
+
                 _response.Result = true;
             }
             catch (Exception ex)
