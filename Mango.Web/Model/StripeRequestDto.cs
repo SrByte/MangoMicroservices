@@ -1,5 +1,4 @@
-﻿using Mango.Web.Model;
-
+﻿
 namespace Mango.Web.Models
 {
     public class StripeRequestDto
