@@ -171,46 +171,46 @@ namespace Mango.Services.OrderAPI.Controllers
         }
 
 
-        //[Authorize]
-        //[HttpPost("ValidateStripeSession")]
-        //public async Task<ResponseDto> ValidateStripeSession([FromBody] int orderHeaderId)
-        //{
-        //    try
-        //    {
+        [Authorize]
+        [HttpPost("ValidateStripeSession")]
+        public async Task<ResponseDto> ValidateStripeSession([FromBody] int orderHeaderId)
+        {
+            try
+            {
 
-        //        OrderHeader orderHeader = _db.OrderHeaders.First(u => u.OrderHeaderId == orderHeaderId);
+                OrderHeader orderHeader = _db.OrderHeaders.First(u => u.OrderHeaderId == orderHeaderId);
 
-        //        var service = new SessionService();
-        //        Session session = service.Get(orderHeader.StripeSessionId);
+                var service = new SessionService();
+                Session session = service.Get(orderHeader.StripeSessionId);
 
-        //        var paymentIntentService = new PaymentIntentService();
-        //        PaymentIntent paymentIntent = paymentIntentService.Get(session.PaymentIntentId);
+                var paymentIntentService = new PaymentIntentService();
+                PaymentIntent paymentIntent = paymentIntentService.Get(session.PaymentIntentId);
 
-        //        if(paymentIntent.Status== "succeeded")
-        //        {
-        //            //then payment was successful
-        //            orderHeader.PaymentIntentId = paymentIntent.Id;
-        //            orderHeader.Status = SD.Status_Approved;
-        //            _db.SaveChanges();
-        //            RewardsDto rewardsDto = new()
-        //            {
-        //                OrderId = orderHeader.OrderHeaderId,
-        //                RewardsActivity = Convert.ToInt32(orderHeader.OrderTotal),
-        //                UserId = orderHeader.UserId
-        //            };
-        //            string topicName = _configuration.GetValue<string>("TopicAndQueueNames:OrderCreatedTopic");
-        //            await _messageBus.PublishMessage(rewardsDto,topicName);
-        //            _response.Result = _mapper.Map<OrderHeaderDto>(orderHeader);
-        //        }
+                if (paymentIntent.Status == "succeeded")
+                {
+                    //then payment was successful
+                    orderHeader.PaymentIntentId = paymentIntent.Id;
+                    orderHeader.Status = SD.Status_Approved;
+                    _db.SaveChanges();
+                    //RewardsDto rewardsDto = new()
+                    //{
+                    //    OrderId = orderHeader.OrderHeaderId,
+                    //    RewardsActivity = Convert.ToInt32(orderHeader.OrderTotal),
+                    //    UserId = orderHeader.UserId
+                    //};
+                    //string topicName = _configuration.GetValue<string>("TopicAndQueueNames:OrderCreatedTopic");
+                    //await _messageBus.PublishMessage(rewardsDto, topicName);
+                    _response.Result = _mapper.Map<OrderHeaderDto>(orderHeader);
+                }
 
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _response.Message = ex.Message;
-        //        _response.IsSuccess = false;
-        //    }
-        //    return _response;
-        //}
+            }
+            catch (Exception ex)
+            {
+                _response.Message = ex.Message;
+                _response.IsSuccess = false;
+            }
+            return _response;
+        }
 
 
         //[Authorize]
